@@ -1,9 +1,9 @@
 <?php
 
 include('../system/config.php');
-include_once '../mailer/mail2.php';
 $output = "";
 
+//code that arranges users in a tree manner in the database
 function shareEarningPoint($id, $pointVal,$level = 0, $where, $newUser, $plan)
 {
 		global $obj;
@@ -82,6 +82,7 @@ function getRandNum($num)
 	}
 }
 
+//code that checks who is up and down a particular tree
 function groupUp($value)
 {
 	$count = count($value);
@@ -100,7 +101,8 @@ function groupUp($value)
 	return $newarr;
 }
 
-if (isset($_POST['new'])){
+//sign new user starts here
+if (isset($_POST['newUser'])){
 	$alldata = isset($_COOKIE['user'])?json_decode($_COOKIE['user']):"";
 	$firstname = (isset($_COOKIE['user']))? $alldata->fname: '';
 	$lastname = (isset($_COOKIE['user'])) ? $alldata->lname: '';
@@ -159,6 +161,7 @@ if (isset($_POST['new'])){
 								$clause = $id;
 								$sql = $obj->update($tble,$flds, $val, $cond, $clause);
 								if (isset($sql->sucMsg)) {
+									//if user doesn't bring someone new
 									if ($referrer == "") {	
 										$sql333 = $obj->generalSelectStatement("SELECT * FROM main_table");
 										if ($sql333->_general_count == 1) {
@@ -168,6 +171,7 @@ if (isset($_POST['new'])){
 											$referrer = $sql333->_general_result[0]->pincode;
 										}
 									}
+									//if a user brings someone new
 									if ($referrer != "") {	
 										$sql333 = $obj->generalSelectStatement("SELECT * FROM main_table WHERE pincode = '$referrer'");
 										if ($sql333->_general_count > 0) {
@@ -176,6 +180,7 @@ if (isset($_POST['new'])){
 											$ref_plan = (int)$sql333->_general_result[0]->plan;
 											$refid = $sql333->_general_result[0]->main_id;
 											$where = array();
+											//the pricing plans available and getting the point value for each
 											switch ($plan) {
 												case "Classic plan":
 													$where[] = "ref_bonus_classic";
@@ -195,7 +200,7 @@ if (isset($_POST['new'])){
 												default:
 													echo "stopped";
 											}
-											
+											//calculating and sharing the bonus points based on the plan selected
 											$mtchptval = (int)$sql333->_general_result[0]->match_point;
 											shareEarningPoint(array($refid), $ptval,$level = 0, $where, $id, $plan);
 											$swq = $obj->generalSelectStatement("SELECT * FROM referals WHERE newCustomer_id = '$id'")->_general_result[0]->ref_id;
@@ -213,6 +218,7 @@ if (isset($_POST['new'])){
 														$refs_plan = $sql12->_general_result[0]->plan;
 														$refs_slf = (float)$sql12->_general_result[0]->slf;
 														$refs_lvl = $sql12->_general_result[0]->level;
+														//the available plans vs the points the referred user would get if the referrer was a classic plan or exotic plan or premium plan user and the referred was either of the the three plan
 														switch ($plan) {
 															case "Classic plan":
 																switch ($refs_plan) {
@@ -378,6 +384,7 @@ if (isset($_POST['new'])){
 	}
 }
 
+//create a random string
 if (isset($_POST['randStr'])) {
 	$data = getRandNum(6);
 	echo $data;
